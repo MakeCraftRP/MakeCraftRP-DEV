@@ -1,10 +1,14 @@
 {
     "name": "makecraftrp",
     "preductname": "MakeCraftRP Launcher",
-    "version": "2.0.9",
+    "version": "2.1.0",
     "description": "Launcher de MakeCraftRP",
     "main": "src/app.js",
-    "author": "ZeroxarZ",
+    "author": {
+        "name": "ZeroxarZ, Inc.",
+        "email": "contact@makecraftrp.com",
+        "url": "https://github.com/MakeCraftRP/MakeCraftRP"
+    },
     "env": "panel",
     "settings": "https://api.makecraftrp.com",
     "scripts": {
