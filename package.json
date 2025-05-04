@@ -1,7 +1,7 @@
 {
     "name": "makecraftrp",
     "preductname": "MakeCraftRP Launcher",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Launcher de MakeCraftRP",
     "main": "src/app.js",
     "author": {
@@ -9,8 +9,8 @@
         "email": "contact@makecraftrp.com",
         "url": "https://github.com/MakeCraftRP/MakeCraftRP"
     },
-    "env": "panel",
-    "settings": "https://api.makecraftrp.com",
+    "env": "azuriom",
+    "settings": "https://makecraftrp.com",
     "scripts": {
         "start": "cross-env-shell NODE_ENV=dev electron .",
         "build": "node build.js --build=platform",
