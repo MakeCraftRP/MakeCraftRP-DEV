@@ -417,8 +417,8 @@ class Settings {
             const img = new Image();
             img.src = URL.createObjectURL(file);
             img.onload = async () => {
-                if (img.width !== 2048 || img.height !== 2048) {
-                    alert('L\'image doit faire 2048x2048 pixels.');
+                if (img.width !== 64 || img.height !== 64) {
+                    alert('L\'image doit faire 64x64 pixels.');
                     return;
                 }
 
