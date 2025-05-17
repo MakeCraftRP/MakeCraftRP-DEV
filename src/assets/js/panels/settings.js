@@ -403,29 +403,41 @@ class Settings {
         }
     }
 
-    async selectFile() {
-        const input = document.getElementById('fileInput');
-        input.click();
+async selectFile() {
+    const input = document.getElementById('fileInput');
+    input.click();
 
-        input.onchange = async () => {
-            const file = input.files[0];
-            if (!file) return;
-            if (file.type !== 'image/png') {
-                alert('Le fichier doit être une image PNG.');
+    input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (file.type !== 'image/png') {
+            alert('Le fichier doit être une image PNG.');
+            return;
+        }
+
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+
+        img.onload = async () => {
+            const { width, height } = img;
+
+            if (
+                width < 64 || height < 64 ||
+                width > 2048 || height > 2048
+            ) {
+                alert('L\'image doit avoir des dimensions comprises entre 64x64 et 2048x2048 pixels.');
                 return;
             }
-            const img = new Image();
-            img.src = URL.createObjectURL(file);
-            img.onload = async () => {
-                if (img.width !== 64 || img.height !== 64) {
-                    alert('L\'image doit faire 64x64 pixels.');
-                    return;
-                }
 
-                await this.processSkinChange.bind(this)(file);
-            };
+            await this.processSkinChange.bind(this)(file);
         };
-    }
+
+        img.onerror = () => {
+            alert('Impossible de charger l\'image. Le fichier est peut-être corrompu.');
+        };
+    };
+}
 
     async processSkinChange(file) {
         if (!file) {
