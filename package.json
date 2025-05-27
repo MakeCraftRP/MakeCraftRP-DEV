@@ -1,8 +1,8 @@
 {
-    "name": "makecraftrp",
-    "preductname": "MakeCraftRP Launcher",
-    "version": "1.0.1",
-    "description": "Launcher de MakeCraftRP",
+    "name": "makecraftrpdev",
+    "preductname": "MakeCraftRP DEV",
+    "version": "1.0.2",
+    "description": "Launcher de MakeCraftRPDEV",
     "main": "src/app.js",
     "author": {
         "name": "ZeroxarZ, Inc.",
