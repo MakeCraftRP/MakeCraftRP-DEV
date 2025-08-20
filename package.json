@@ -1,7 +1,7 @@
 {
     "name": "makecraftrpdev",
     "preductname": "MakeCraftRP DEV",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Launcher de MakeCraftRPDEV",
     "main": "src/app.js",
     "author": {

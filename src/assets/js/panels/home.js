@@ -4,7 +4,7 @@
 
 'use strict';
 
-import { logger, database, changePanel, t } from '../utils.js';
+import { logger, database, changePanel } from '../utils.js';
 const { Launch, Status } = require('minecraft-java-core-azbetter');
 const { ipcRenderer, shell } = require('electron');
 const path = require('path');
@@ -24,8 +24,6 @@ class Home {
         this.database = await new database().init();
         this.config = config;
         this.news = await news;
-
-        this.setStaticTexts();
         this.initNews();
         this.initLaunch();
         this.initStatusServer();
@@ -35,21 +33,11 @@ class Home {
         this.verifyModsBeforeLaunch();
     }
 
-    setStaticTexts() {
-        document.getElementById('play-btn').textContent = t('play');
-        document.getElementById('text-download').textContent = t('verification');
-        document.getElementById('server-name').textContent = t('offline');
-        document.getElementById('server-desc').innerHTML = `<span class="red">${t('closed')}</span>`;
-        document.getElementById('video-title').textContent = t('community_video');
-        document.getElementById('play-video-btn').innerHTML = '&#9658;';
-        document.getElementById('view-video-btn').textContent = t('view_video');
-    }
-
     async initNews() {
         const newsContainer = document.querySelector('.news-list');
         if (this.news) {
             if (!this.news.length) {
-                this.createNewsBlock(newsContainer, t('no_news_available'), t('news_follow_here'));
+                this.createNewsBlock(newsContainer, 'Aucun news n\'est actuellement disponible.', 'Vous pourrez suivre ici toutes les news relatives au serveur.');
             } else {
                 for (const newsItem of this.news) {
                     const date = await this.getDate(newsItem.publish_date);
@@ -57,7 +45,7 @@ class Home {
                 }
             }
         } else {
-            this.createNewsBlock(newsContainer, t('error_contacting_server'), t('error_contacting_server'));
+            this.createNewsBlock(newsContainer, 'Error.', 'Impossible de contacter le serveur des news. Merci de vérifier votre configuration.');
         }
         this.setServerIcon();
     }
@@ -136,10 +124,7 @@ class Home {
                 ...(Array.isArray(this.config.ignored) ? this.config.ignored : Object.values(this.config.ignored)),
                 "launcher_config",
             ],
-            intelEnabledMac: process.platform === 'darwin' && process.arch === 'arm64',
-            downloadFileMultiple: 30,
-            JVM_ARGS: [],
-            GAME_ARGS: [],
+            
             java: this.config.java,
             memory: {
                 min: `${ram.ramMin * 1024}M`,
@@ -155,11 +140,11 @@ class Home {
 
     setupLaunchListeners(launch, info, progressBar, playBtn, launcherSettings) {
         launch.on('extract', extract => console.log(extract));
-        launch.on('progress', (progress, size) => this.updateProgressBar(progressBar, info, progress, size, t('download')));
-        launch.on('check', (progress, size) => this.updateProgressBar(progressBar, info, progress, size, t('verification')));
+        launch.on('progress', (progress, size) => this.updateProgressBar(progressBar, info, progress, size, 'Téléchargement'));
+        launch.on('check', (progress, size) => this.updateProgressBar(progressBar, info, progress, size, 'Vérification'));
         launch.on('estimated', time => console.log(this.formatTime(time)));
         launch.on('speed', speed => console.log(`${(speed / 1067008).toFixed(2)} Mb/s`));
-        launch.on('patch', patch => info.innerHTML = t('patch_in_progress'));
+        launch.on('patch', patch => info.innerHTML = `Patch en cours...`);
         launch.on('data', e => this.handleLaunchData(e, info, progressBar, playBtn, launcherSettings));
         launch.on('close', code => this.handleLaunchClose(code, info, progressBar, playBtn, launcherSettings));
         launch.on('error', err => console.log(err));
@@ -185,7 +170,7 @@ class Home {
         if (launcherSettings.launcher.close === 'close-launcher') ipcRenderer.send("main-window-hide");
         ipcRenderer.send('main-window-progress-reset');
         progressBar.style.display = "none";
-        info.innerHTML = t('starting');
+        info.innerHTML = `Démarrage en cours...`;
         console.log(e);
     }
 
@@ -194,7 +179,7 @@ class Home {
         progressBar.style.display = "none";
         info.style.display = "none";
         playBtn.style.display = "block";
-        info.innerHTML = t('verification');
+        info.innerHTML = `Vérification`;
         new logger('Launcher', '#7289da');
         console.log('Close');
     }
@@ -208,12 +193,12 @@ class Home {
 
         if (!serverPing.error) {
             nameServer.textContent = this.config.status.nameServer;
-            serverMs.innerHTML = `<span class="green">${t('server_online')}</span> - ${serverPing.ms}${t('server_ping')}`;
+            serverMs.innerHTML = `<span class="green">En ligne</span> - ${serverPing.ms}ms`;
             online.classList.toggle("off");
             playersConnected.textContent = serverPing.playersConnect;
         } else {
-            nameServer.textContent = t('server_unavailable');
-            serverMs.innerHTML = `<span class="red">${t('server_closed')}</span>`;
+            nameServer.textContent = 'Serveur indisponible';
+            serverMs.innerHTML = `<span class="red">Hors ligne</span>`;
         }
     }
 
@@ -279,13 +264,9 @@ class Home {
     async getDate(e) {
         const date = new Date(e);
         const year = date.getFullYear();
-        const month = date.getMonth();
+        const month = date.getMonth() + 1;
         const day = date.getDate();
-        const months = [
-            t('january'), t('february'), t('march'), t('april'), t('may'), t('june'),
-            t('july'), t('august'), t('september'), t('october'), t('november'), t('december')
-        ];
-        return { year, month: months[month], day };
+        return { year, month: MONTHS[month - 1], day };
     }
 
     async verifyModsBeforeLaunch() {
@@ -315,42 +296,6 @@ class Home {
                 }
             }
         });
-    }
-
-    displayEmptyModsMessage(modsListElement) {
-        const modElement = document.createElement('div');
-        modElement.innerHTML = `
-            <div class="mods-container-empty">
-              <h2>${t('optional_mods_not_downloaded')}</h2>
-            </div>`;
-        modsListElement.appendChild(modElement);
-    }
-
-    updateRole(account) {
-        if (this.config.role && account.user_info.role) {
-            const blockRole = document.createElement("div");
-            blockRole.innerHTML = `<div>${t('grade')}: ${account.user_info.role.name}</div>`;
-            document.querySelector('.player-role').appendChild(blockRole);
-        } else {
-            document.querySelector(".player-role").style.display = "none";
-        }
-    }
-
-    updateWhitelist(account) {
-        const playBtn = document.querySelector(".play-btn");
-        if (this.config.whitelist_activate && 
-            (!this.config.whitelist.includes(account.name) &&
-             !this.config.whitelist_roles.includes(account.user_info.role.name))) {
-            playBtn.style.backgroundColor = "#696969";
-            playBtn.style.pointerEvents = "none";
-            playBtn.style.boxShadow = "none";
-            playBtn.textContent = t('unavailable');
-        } else {
-            playBtn.style.backgroundColor = "#00bd7a";
-            playBtn.style.pointerEvents = "auto";
-            playBtn.style.boxShadow = "2px 2px 5px rgba(0, 0, 0, 0.3)";
-            playBtn.textContent = t('play');
-        }
     }
 }
 
